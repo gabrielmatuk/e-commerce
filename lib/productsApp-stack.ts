@@ -9,6 +9,7 @@ import { Construct } from 'constructs'
 
 export class ProductsAppStack extends cdk.Stack {
   readonly productsFetchHandler: lambdaNodeJS.NodejsFunction
+  readonly productsAdminHandler: lambdaNodeJS.NodejsFunction
   readonly productsDdb: dynamodb.Table
   //scope = todo projeto do cdk. id = id propriamente dito do projeto. props = propriedades passadas para o CDK
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -42,7 +43,35 @@ export class ProductsAppStack extends cdk.Stack {
           minify: true,
           sourceMap: false,
         },
+        environment: {
+          PRODUCTS_DDB: this.productsDdb.tableName,
+        },
       }
     )
+    //Liberando permissao de leitura do Lambda -> Tabela products.
+    this.productsDdb.grantReadData(this.productsFetchHandler)
+
+    //Criando lambda de admnistracao para tabela do Dynamo
+    this.productsAdminHandler = new lambdaNodeJS.NodejsFunction(
+      this,
+      'ProductsAdminFunction',
+      {
+        functionName: 'ProductsAdminFunction',
+        entry: 'lambda/products/productsAdminFunction.ts',
+        handler: 'handler',
+        memorySize: 128,
+        timeout: cdk.Duration.seconds(5),
+        bundling: {
+          //como vamos empacotar o arquivo e subir na AWS.
+          minify: true,
+          sourceMap: false,
+        },
+        environment: {
+          PRODUCTS_DDB: this.productsDdb.tableName,
+        },
+      }
+    )
+
+    this.productsDdb.grantWriteData(this.productsAdminHandler)
   }
 }
