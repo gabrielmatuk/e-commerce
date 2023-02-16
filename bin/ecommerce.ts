@@ -1,21 +1,35 @@
 #!/usr/bin/env node
-import 'source-map-support/register';
-import * as cdk from 'aws-cdk-lib';
-import { EcommerceStack } from '../lib/ecommerce-stack';
+import 'source-map-support/register'
+import * as cdk from 'aws-cdk-lib'
+import { ProductsAppStack } from '../lib/productsApp-stack'
+import { ECommerceApiStack } from '../lib/ecommerceApi-stack'
 
-const app = new cdk.App();
-new EcommerceStack(app, 'EcommerceStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
+//Bin -> onde cria todas as stacks criadas na AWS vem dessa pasta
+//As Stacks podem ter depedencias entre elas. O API Gateway recebe parametros do lambda entao, vamos subir primeiro o lambda.
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+const app = new cdk.App()
+//Salvando o AccountId e a regiao utilizada
+const env: cdk.Environment = {
+  account: '708852634539',
+  region: 'us-east-1',
+}
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+//Vamos criar etiquetas para verificar as informacoes tambem de quem criou a tag
+const tags = {
+  cost: 'ECommerce',
+  team: 'MatukGabriel',
+}
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
-});
+const productsAppStack = new ProductsAppStack(app, 'ProductsApp', {
+  tags: tags,
+  env: env,
+})
+//Nesse momento, estou passando o parametro das Lambdas para o meu API Gateway
+const eCommerceApiStack = new ECommerceApiStack(app, 'ECommerceApi', {
+  productsFetchHandler: productsAppStack.productsFetchHandler,
+  tags: tags,
+  env: env,
+})
+
+//Isso insere de forma mais explicita a depedencia de stacks
+eCommerceApiStack.addDependency(productsAppStack)
