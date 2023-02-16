@@ -10,7 +10,8 @@
     "test": "jest",
     "cdk": "cdk",
     "clean": "cdk destroy --all",
-    "deploy": "cdk deploy --all"
+    "diff": "cdk diff",
+    "deploy": "cdk deploy --all --require-approval never"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.110",
