@@ -45,4 +45,15 @@ export class ProductRepository {
       throw new Error('Product not found')
     }
   }
+
+  async create(product: Product): Promise<Product> {
+    product.id = uuid()
+    await this.ddbClient
+      .put({
+        TableName: this.productsDdb,
+        Item: product,
+      })
+      .promise()
+    return product
+  }
 }
