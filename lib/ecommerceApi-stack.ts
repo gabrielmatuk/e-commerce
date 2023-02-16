@@ -16,6 +16,7 @@ export class ECommerceApiStack extends cdk.Stack {
     const logGroup = new cwlogs.LogGroup(this, 'ECommerceApiLogs')
     const api = new apigateway.RestApi(this, 'ECommerceApi', {
       restApiName: 'ECommerceApi',
+      cloudWatchRole: true,
       deployOptions: {
         //Inserindo onde o Cloudwatch vai criar o grupo de logs. Os logs sao para verificar quais informacoes acessam nossos lambdas
         accessLogDestination: new apigateway.LogGroupLogDestination(logGroup),
