@@ -4,6 +4,14 @@ import {
   Context,
 } from 'aws-lambda'
 
+import { Product, ProductRepository } from '/opt/nodejs/productsLayer'
+import { DynamoDB } from 'aws-sdk'
+
+const productsDdb = process.env.PRODUCTS_DDB!
+const ddbClient = new DynamoDB.DocumentClient()
+
+const productRepository = new ProductRepository(ddbClient, productsDdb)
+
 export const handler = async (
   event: APIGatewayProxyEvent,
   context: Context
@@ -20,9 +28,12 @@ export const handler = async (
 
   if (event.resource === '/products') {
     console.log('POST /products')
+    const product = JSON.parse(event.body!) as Product
+    const productCreated = await productRepository.create(product)
+
     return {
       statusCode: 201,
-      body: 'POST /products',
+      body: JSON.stringify(productCreated),
     }
   } else if (event.resource === '/products/{id}') {
     const productId = event.pathParameters!.id as string
@@ -33,10 +44,19 @@ export const handler = async (
         body: `POST /products/${productId}`,
       }
     } else if (event.httpMethod === 'DELETE') {
-      console.log('DELETE /products')
-      return {
-        statusCode: 201,
-        body: 'DELETE /products',
+      console.log(`DELETE /products/${productId}`)
+      try {
+        const product = await productRepository.deleteProduct(productId)
+        return {
+          statusCode: 200,
+          body: JSON.stringify(product),
+        }
+      } catch (error) {
+        console.error((<Error>error).message)
+        return {
+          statusCode: 404,
+          body: (<Error>error).message,
+        }
       }
     }
   }
