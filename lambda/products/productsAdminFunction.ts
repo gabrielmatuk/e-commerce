@@ -39,9 +39,21 @@ export const handler = async (
     const productId = event.pathParameters!.id as string
     if (event.httpMethod === 'PUT') {
       console.log('PUT /products')
-      return {
-        statusCode: 201,
-        body: `POST /products/${productId}`,
+      const product = JSON.parse(event.body!) as Product
+      try {
+        const productUpdated = await productRepository.updateProduct(
+          productId,
+          product
+        )
+        return {
+          statusCode: 201,
+          body: JSON.stringify(productUpdated),
+        }
+      } catch (ConditionalCheckFailedException) {
+        return {
+          statusCode: 404,
+          body: 'Product not found',
+        }
       }
     } else if (event.httpMethod === 'DELETE') {
       console.log(`DELETE /products/${productId}`)
