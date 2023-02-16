@@ -73,4 +73,27 @@ export class ProductRepository {
       throw new Error('Produto not found')
     }
   }
+
+  async updateProduct(productId: string, product: Product): Promise<Product> {
+    const data = await this.ddbClient
+      .update({
+        TableName: this.productsDdb,
+        Key: {
+          id: productId,
+        },
+        ConditionExpression: 'attribute_exists(id)',
+        ReturnValues: 'UPDATED_NEW',
+        UpdateExpression:
+          'set productName = :n, code = :c, price = :p, model = :m',
+        ExpressionAttributeValues: {
+          ':n': product.productName,
+          ':c': product.code,
+          ':p': product.price,
+          ':m': product.model,
+        },
+      })
+      .promise()
+    data.Attributes!.id = productId
+    return data.Attributes as Product
+  }
 }
