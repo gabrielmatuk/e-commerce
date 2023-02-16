@@ -27,20 +27,30 @@ export const handler = async (
   )
   if (event.resource === '/products') {
     if (method === 'GET') {
-      console.log('GET!')
+      console.log('GET /products')
+
+      const products = await productRepository.getAllProducts()
+
       return {
         statusCode: 200,
-        body: JSON.stringify({
-          message: 'GET Products - OK',
-        }),
+        body: JSON.stringify(products),
       }
     }
   } else if (event.resource === '/products/{id}') {
     const productId = event.pathParameters!.id as string
     console.log(`GET /products/${productId}`)
-    return {
-      statusCode: 200,
-      body: `GET /products/${productId}`,
+    try {
+      const product = await productRepository.getProductById(productId)
+      return {
+        statusCode: 200,
+        body: JSON.stringify(product),
+      }
+    } catch (error) {
+      console.error((<Error>error).message)
+      return {
+        statusCode: 404,
+        body: (<Error>error).message,
+      }
     }
   }
   return {
