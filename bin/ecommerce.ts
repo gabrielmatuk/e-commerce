@@ -3,6 +3,7 @@ import 'source-map-support/register'
 import * as cdk from 'aws-cdk-lib'
 import { ProductsAppStack } from '../lib/productsApp-stack'
 import { ECommerceApiStack } from '../lib/ecommerceApi-stack'
+import { ProductsAppLayersStack } from '../lib/productsAppLayers-stack'
 
 //Bin -> onde cria todas as stacks criadas na AWS vem dessa pasta
 //As Stacks podem ter depedencias entre elas. O API Gateway recebe parametros do lambda entao, vamos subir primeiro o lambda.
@@ -20,10 +21,23 @@ const tags = {
   team: 'MatukGabriel',
 }
 
+const productsAppLayersStack = new ProductsAppLayersStack(
+  app,
+  'ProductsAppLayers',
+  {
+    tags: tags,
+    env: env,
+  }
+)
+
 const productsAppStack = new ProductsAppStack(app, 'ProductsApp', {
   tags: tags,
   env: env,
 })
+
+//Inserindo uma depedencia, evitar algum problema.
+productsAppStack.addDependency(productsAppLayersStack)
+
 //Nesse momento, estou passando o parametro das Lambdas para o meu API Gateway
 const eCommerceApiStack = new ECommerceApiStack(app, 'ECommerceApi', {
   productsFetchHandler: productsAppStack.productsFetchHandler,

@@ -4,6 +4,7 @@ import * as lambdaNodeJS from 'aws-cdk-lib/aws-lambda-nodejs'
 
 import * as cdk from 'aws-cdk-lib'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
+import * as ssm from 'aws-cdk-lib/aws-ssm'
 
 import { Construct } from 'constructs'
 
@@ -28,6 +29,17 @@ export class ProductsAppStack extends cdk.Stack {
       writeCapacity: 1,
     })
 
+    //Criando os Layer de produto
+    const productsLayerArn = ssm.StringParameter.valueForStringParameter(
+      this,
+      'ProductsLayerVersionArn'
+    )
+    const productsLayer = lambda.LayerVersion.fromLayerVersionArn(
+      this,
+      'ProductsLayerVersionArn',
+      productsLayerArn
+    )
+
     //configurando como sera minha funcao lambda
     this.productsFetchHandler = new lambdaNodeJS.NodejsFunction(
       this,
@@ -46,6 +58,7 @@ export class ProductsAppStack extends cdk.Stack {
         environment: {
           PRODUCTS_DDB: this.productsDdb.tableName,
         },
+        layers: [productsLayer],
       }
     )
     //Liberando permissao de leitura do Lambda -> Tabela products.
@@ -69,6 +82,7 @@ export class ProductsAppStack extends cdk.Stack {
         environment: {
           PRODUCTS_DDB: this.productsDdb.tableName,
         },
+        layers: [productsLayer],
       }
     )
 
