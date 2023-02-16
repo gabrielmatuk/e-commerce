@@ -56,4 +56,21 @@ export class ProductRepository {
       .promise()
     return product
   }
+
+  async deleteProduct(productId: string): Promise<Product> {
+    const data = await this.ddbClient
+      .delete({
+        TableName: this.productsDdb,
+        Key: {
+          id: productId,
+        },
+        ReturnValues: 'ALL_OLD',
+      })
+      .promise()
+    if (data.Attributes) {
+      return data.Attributes as Product
+    } else {
+      throw new Error('Produto not found')
+    }
+  }
 }
