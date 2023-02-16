@@ -27,6 +27,7 @@ const productsAppStack = new ProductsAppStack(app, 'ProductsApp', {
 //Nesse momento, estou passando o parametro das Lambdas para o meu API Gateway
 const eCommerceApiStack = new ECommerceApiStack(app, 'ECommerceApi', {
   productsFetchHandler: productsAppStack.productsFetchHandler,
+  productsAdminHandler: productsAppStack.productsAdminHandler,
   tags: tags,
   env: env,
 })
