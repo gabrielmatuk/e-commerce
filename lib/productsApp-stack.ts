@@ -65,7 +65,7 @@ export class ProductsAppStack extends cdk.Stack {
         insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_119_0,
       }
     )
-
+    props.eventsDbd.grantWriteData(productEventsHandler)
     //configurando como sera minha funcao lambda
     this.productsFetchHandler = new lambdaNodeJS.NodejsFunction(
       this,
@@ -109,6 +109,7 @@ export class ProductsAppStack extends cdk.Stack {
         },
         environment: {
           PRODUCTS_DDB: this.productsDdb.tableName,
+          PRODUCT_EVENTS_FUNCTION_NAME: productEventsHandler.functionName,
         },
         layers: [productsLayer],
         tracing: lambda.Tracing.ACTIVE,
@@ -117,5 +118,7 @@ export class ProductsAppStack extends cdk.Stack {
     )
 
     this.productsDdb.grantWriteData(this.productsAdminHandler)
+    //Garantindo as permissoes para fazer as modificacoes na stack
+    productEventsHandler.grantInvoke(this.productsAdminHandler)
   }
 }
