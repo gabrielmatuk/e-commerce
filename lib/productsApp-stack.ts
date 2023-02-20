@@ -59,7 +59,7 @@ export class ProductsAppStack extends cdk.Stack {
       'ProductsEventsFunction',
       {
         functionName: 'ProductsEventsFunction',
-        entry: 'lambda/products/ProductsEventsFunction.ts',
+        entry: 'lambda/products/productsEventsFunction.ts',
         handler: 'handler',
         memorySize: 128,
         timeout: cdk.Duration.seconds(2),

@@ -44,6 +44,7 @@ const productsAppStack = new ProductsAppStack(app, 'ProductsApp', {
 //Inserindo uma depedencia, evitar algum problema.
 productsAppStack.addDependency(productsAppLayersStack)
 productsAppStack.addDependency(eventsDdbStack)
+
 //Nesse momento, estou passando o parametro das Lambdas para o meu API Gateway
 const eCommerceApiStack = new ECommerceApiStack(app, 'ECommerceApi', {
   productsFetchHandler: productsAppStack.productsFetchHandler,
