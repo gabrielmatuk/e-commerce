@@ -128,7 +128,7 @@ const sendProductEvent = (
     .invoke({
       FunctionName: productEventsFunctionName,
       Payload: JSON.stringify(event),
-      InvocationType: 'RequestResponse',
+      InvocationType: 'Event',
     })
     .promise()
 }

@@ -4,7 +4,7 @@ import * as cdk from 'aws-cdk-lib'
 import { ProductsAppStack } from '../lib/productsApp-stack'
 import { ECommerceApiStack } from '../lib/ecommerceApi-stack'
 import { ProductsAppLayersStack } from '../lib/productsAppLayers-stack'
-import { EventsDbdStack } from 'lib/eventsDbd-stack'
+import { EventsDbdStack } from '../lib/eventsDbd-stack'
 //Bin -> onde cria todas as stacks criadas na AWS vem dessa pasta
 //As Stacks podem ter depedencias entre elas. O API Gateway recebe parametros do lambda entao, vamos subir primeiro o lambda.
 
