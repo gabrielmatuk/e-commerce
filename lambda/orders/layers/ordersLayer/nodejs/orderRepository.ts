@@ -29,4 +29,16 @@ export class OrderRepository {
     this.ddbClient = ddbClient
     this.ordersDdb = orderDdb
   }
+
+  async createOrder(order: Order): Promise<Order> {
+    order.sk = uuid()
+    order.createdAt = Date.now()
+    await this.ddbClient
+      .put({
+        TableName: this.ordersDdb,
+        Item: order,
+      })
+      .promise()
+    return order
+  }
 }
