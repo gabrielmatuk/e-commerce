@@ -3,6 +3,9 @@ import * as lambdaNodeJS from 'aws-cdk-lib/aws-lambda-nodejs'
 import * as cdk from 'aws-cdk-lib'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as ssm from 'aws-cdk-lib/aws-ssm'
+import * as sns from 'aws-cdk-lib/aws-sns'
+import * as subs from 'aws-cdk-lib/aws-sns-subscriptions'
+
 import { Construct } from 'constructs'
 
 interface OrdersAppStackProps extends cdk.StackProps {
@@ -63,6 +66,13 @@ export class OrdersAppStack extends cdk.Stack {
       'ProductsLayerVersionArn',
       productsLayerArn
     )
+
+    //Criando SNS
+    const ordersTopic = new sns.Topic(this, 'OrderEventsTopic', {
+      displayName: 'Order events topic',
+      topicName: 'order-events',
+    })
+
     this.ordersHandler = new lambdaNodeJS.NodejsFunction(
       this,
       'OrdersFunction',
