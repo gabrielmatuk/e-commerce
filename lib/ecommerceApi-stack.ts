@@ -8,6 +8,7 @@ import { Construct } from 'constructs'
 interface ECommerceApiStackProps extends cdk.StackProps {
   productsFetchHandler: lambdaNodeJS.NodejsFunction
   productsAdminHandler: lambdaNodeJS.NodejsFunction
+  ordersHandler: lambdaNodeJS.NodejsFunction
 }
 
 export class ECommerceApiStack extends cdk.Stack {
@@ -37,6 +38,35 @@ export class ECommerceApiStack extends cdk.Stack {
       },
     })
     //Conectando a integracao do API Gateway com o nosso Lambda!
+    this.createProductsService(props, api)
+    this.createOrdersService(props, api)
+  }
+  private createOrdersService(
+    props: ECommerceApiStackProps,
+    api: apigateway.RestApi
+  ) {
+    const ordersIntegration = new apigateway.LambdaIntegration(
+      props.ordersHandler
+    )
+
+    //Resource -/orders
+    const ordersResource = api.root.addResource('orders')
+
+    //GET /orders
+    //GET /orders?email=test@test
+    //GET /orders?email=test@test&orderId=123
+    //Posso ter um unico metodo nesse caso.
+    ordersResource.addMethod('GET', ordersIntegration)
+    //DELETE /orders?email=test@test&orderId=123
+    ordersResource.addMethod('DELETE', ordersIntegration)
+
+    //POST /orders
+    ordersResource.addMethod('POST', ordersIntegration)
+  }
+  private createProductsService(
+    props: ECommerceApiStackProps,
+    api: apigateway.RestApi
+  ) {
     const productsFetchIntegration = new apigateway.LambdaIntegration(
       props.productsFetchHandler
     )
