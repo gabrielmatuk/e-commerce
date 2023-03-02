@@ -45,12 +45,35 @@ export const handler = async (
       if (email) {
         if (orderId) {
           //Get one order from a User
+          try {
+            const order = await orderRepository.getOrder(email, orderId)
+            return {
+              statusCode: 200,
+              body: JSON.stringify(convertToOrderResponse(order)),
+            }
+          } catch (error) {
+            console.log((<Error>error).message)
+            return {
+              statusCode: 404,
+              body: (<Error>error).message,
+            }
+          }
         } else {
           //Get all orders from an user
+          const orders = await orderRepository.getOrdersByEmail(email)
+          return {
+            statusCode: 200,
+            body: JSON.stringify(orders.map(convertToOrderResponse)),
+          }
         }
       }
     } else {
       //Get all orders
+      const orders = await orderRepository.getAllOrders()
+      return {
+        statusCode: 200,
+        body: JSON.stringify(orders.map(convertToOrderResponse)),
+      }
     }
 
     console.log('GET /orders')
