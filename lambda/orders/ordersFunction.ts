@@ -1,6 +1,7 @@
 import { DynamoDB } from 'aws-sdk'
-import { OrderRepository } from '/opt/nodejs/ordersLayer'
-import { ProductRepository } from '/opt/nodejs/productsLayer'
+import { Order, OrderProduct, OrderRepository } from '/opt/nodejs/ordersLayer'
+import { Product, ProductRepository } from '/opt/nodejs/productsLayer'
+import { OrderProductResponse, OrderRequest } from '/opt/nodejs/ordersApiLayer'
 import * as AWSXRay from 'aws-xray-sdk'
 import {
   APIGatewayProxyEvent,
@@ -57,4 +58,31 @@ export const handler = async (
     statusCode: 400,
     body: 'Bad request',
   }
+}
+
+const buildOrder = (orderRequest: OrderRequest, products: Product[]): Order => {
+  const orderProducts: OrderProductResponse[] = []
+  let totalPrice = 0
+
+  products.forEach((product) => {
+    totalPrice += product.price
+    orderProducts.push({
+      code: product.code,
+      price: product.price,
+    })
+  })
+  const order: Order = {
+    pk: orderRequest.email,
+    billing: {
+      payment: orderRequest.payment,
+      totalPrice: totalPrice,
+    },
+    shipping: {
+      type: orderRequest.shipping.type,
+      carrier: orderRequest.shipping.carrier,
+    },
+    products: orderProducts,
+  }
+
+  return order
 }
