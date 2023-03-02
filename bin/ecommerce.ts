@@ -5,6 +5,9 @@ import { ProductsAppStack } from '../lib/productsApp-stack'
 import { ECommerceApiStack } from '../lib/ecommerceApi-stack'
 import { ProductsAppLayersStack } from '../lib/productsAppLayers-stack'
 import { EventsDbdStack } from '../lib/eventsDbd-stack'
+import { OrdersAppLayersStack } from '../lib/ordersAppLayers-stack'
+import { OrdersAppStack } from '../lib/ordersApp-stack'
+
 //Bin -> onde cria todas as stacks criadas na AWS vem dessa pasta
 //As Stacks podem ter depedencias entre elas. O API Gateway recebe parametros do lambda entao, vamos subir primeiro o lambda.
 
@@ -45,13 +48,29 @@ const productsAppStack = new ProductsAppStack(app, 'ProductsApp', {
 productsAppStack.addDependency(productsAppLayersStack)
 productsAppStack.addDependency(eventsDdbStack)
 
+const ordersAppLayerStack = new OrdersAppLayersStack(app, 'OrdersAppLayers', {
+  tags: tags,
+  env: env,
+})
+
+const ordersAppStack = new OrdersAppStack(app, 'OrdersApp', {
+  tags: tags,
+  env: env,
+  productsDdb: productsAppStack.productsDdb,
+})
+
+ordersAppStack.addDependency(productsAppStack)
+ordersAppStack.addDependency(ordersAppLayerStack)
+
 //Nesse momento, estou passando o parametro das Lambdas para o meu API Gateway
 const eCommerceApiStack = new ECommerceApiStack(app, 'ECommerceApi', {
   productsFetchHandler: productsAppStack.productsFetchHandler,
   productsAdminHandler: productsAppStack.productsAdminHandler,
+  ordersHandler: ordersAppStack.ordersHandler,
   tags: tags,
   env: env,
 })
 
 //Isso insere de forma mais explicita a depedencia de stacks
 eCommerceApiStack.addDependency(productsAppStack)
+eCommerceApiStack.addDependency(ordersAppStack)
