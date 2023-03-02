@@ -58,7 +58,23 @@ export class ECommerceApiStack extends cdk.Stack {
     //Posso ter um unico metodo nesse caso.
     ordersResource.addMethod('GET', ordersIntegration)
     //DELETE /orders?email=test@test&orderId=123
-    ordersResource.addMethod('DELETE', ordersIntegration)
+    const orderDeletionValidator = new apigateway.RequestValidator(
+      this,
+      'OrdersDeletionValidator',
+      {
+        restApi: api,
+        requestValidatorName: 'OrderDeletionValidator',
+        validateRequestParameters: true,
+      }
+    )
+    //Validando no API Gateway as informacoes da URL
+    ordersResource.addMethod('DELETE', ordersIntegration, {
+      requestParameters: {
+        'method.request.querystring.email': true,
+        'method.request.querystring.orderId': true,
+      },
+      requestValidator: orderDeletionValidator,
+    })
 
     //POST /orders
     ordersResource.addMethod('POST', ordersIntegration)
