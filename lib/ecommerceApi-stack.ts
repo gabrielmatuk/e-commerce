@@ -114,7 +114,7 @@ export class ECommerceApiStack extends cdk.Stack {
     ordersResource.addMethod('POST', ordersIntegration, {
       requestValidator: orderRequestValidator,
       requestModels: {
-        'aaplication/json': orderModel,
+        'application/json': orderModel,
       },
     })
   }
