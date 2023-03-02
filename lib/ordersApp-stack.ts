@@ -99,5 +99,6 @@ export class OrdersAppStack extends cdk.Stack {
 
     ordersDdb.grantReadWriteData(this.ordersHandler)
     props.productsDdb.grantReadData(this.ordersHandler)
+    ordersTopic.grantPublish(this.ordersHandler)
   }
 }
