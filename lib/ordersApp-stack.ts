@@ -233,7 +233,11 @@ export class OrdersAppStack extends cdk.Stack {
       }
     )
     orderEmailsHandler.addEventSource(
-      new lambdaEventSource.SqsEventSource(orderEventQueue)
+      new lambdaEventSource.SqsEventSource(orderEventQueue, {
+        batchSize: 5,
+        enabled: true,
+        maxBatchingWindow: cdk.Duration.minutes(1),
+      })
     )
     orderEventQueue.grantConsumeMessages(orderEmailsHandler)
   }
