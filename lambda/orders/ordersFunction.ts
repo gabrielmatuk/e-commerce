@@ -22,6 +22,8 @@ import {
 } from 'aws-lambda'
 AWSXRay.captureAWS(require('aws-sdk'))
 
+import { v4 as uuid } from 'uuid'
+
 const ordersDdb = process.env.ORDERS_DDB!
 const productsDdb = process.env.PRODUCTS_DDB!
 const orderEventsTopicArn = process.env.ORDER_EVENTS_TOPIC_ARN!
@@ -93,20 +95,25 @@ export const handler = async (
 
     if (products.length === orderRequest.productIds.length) {
       const order = buildOrder(orderRequest, products)
-      const orderCreated = await orderRepository.createOrder(order)
+      const orderCreatedPromise = orderRepository.createOrder(order)
 
-      const eventResult = await sendOrderEvent(
-        orderCreated,
+      const eventResultPromise = sendOrderEvent(
+        order,
         OrderEventType.CREATED,
         lambdaRequestId
       )
 
+      const results = await Promise.all([
+        orderCreatedPromise,
+        eventResultPromise,
+      ])
+
       console.log(
-        `Order Created event sent - OrderId: ${orderCreated.sk} - MessageId: ${eventResult.MessageId}`
+        `Order Created event sent - OrderId: ${order.sk} - MessageId: ${results[1].MessageId}`
       )
       return {
         statusCode: 201,
-        body: JSON.stringify(convertToOrderResponse(orderCreated)),
+        body: JSON.stringify(convertToOrderResponse(order)),
       }
     } else {
       return {
@@ -221,6 +228,8 @@ const buildOrder = (orderRequest: OrderRequest, products: Product[]): Order => {
   })
   const order: Order = {
     pk: orderRequest.email,
+    sk: uuid(),
+    createdAt: Date.now(),
     billing: {
       payment: orderRequest.payment,
       totalPrice: totalPrice,
