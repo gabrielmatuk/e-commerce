@@ -94,6 +94,15 @@ export const handler = async (
       const order = buildOrder(orderRequest, products)
       const orderCreated = await orderRepository.createOrder(order)
 
+      const eventResult = await sendOrderEvent(
+        orderCreated,
+        OrderEventType.CREATED,
+        lambdaRequestId
+      )
+
+      console.log(
+        `Order Created event sent - OrderId: ${orderCreated.sk} - MessageId: ${eventResult.MessageId}`
+      )
       return {
         statusCode: 201,
         body: JSON.stringify(convertToOrderResponse(orderCreated)),
@@ -111,6 +120,17 @@ export const handler = async (
 
     try {
       const orderDelete = await orderRepository.deleteOrder(email, orderId)
+
+      const eventResult = await sendOrderEvent(
+        orderDelete,
+        OrderEventType.DELETED,
+        lambdaRequestId
+      )
+
+      console.log(
+        `Order Deleted event sent - OrderId: ${orderDelete.sk} - MessageId: ${eventResult.MessageId}`
+      )
+
       return {
         statusCode: 200,
         body: JSON.stringify(convertToOrderResponse(orderDelete)),
