@@ -1,5 +1,4 @@
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-import { v4 as uuid } from 'uuid'
 
 export interface OrderProduct {
   code: string
@@ -18,7 +17,7 @@ export interface Order {
     payment: 'CASH' | 'DEBIT_CARD' | 'CREDIT_CARD'
     totalPrice: number
   }
-  products: OrderProduct[]
+  products?: OrderProduct[]
 }
 
 export class OrderRepository {
@@ -44,6 +43,7 @@ export class OrderRepository {
     const data = await this.ddbClient
       .scan({
         TableName: this.ordersDdb,
+        ProjectionExpression: 'pk, sk, createdAt, shipping, billing',
       })
       .promise()
 
@@ -58,6 +58,7 @@ export class OrderRepository {
         ExpressionAttributeValues: {
           ':email': email,
         },
+        ProjectionExpression: 'pk, sk, createdAt, shipping, billing',
       })
       .promise()
     return data.Items as Order[]
