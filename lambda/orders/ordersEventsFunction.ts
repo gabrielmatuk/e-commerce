@@ -1,4 +1,4 @@
-import { DynamoDB } from 'aws-sdk'
+import { AWSError, DynamoDB } from 'aws-sdk'
 import { SNSEvent, Context, SNSMessage } from 'aws-lambda'
 import {
   OrderEventDdb,
@@ -7,6 +7,7 @@ import {
 import { Envelope, OrderEvent } from '/opt/nodejs/ordersEventsLayer'
 
 import * as AWSXRay from 'aws-xray-sdk'
+import { PromiseResult } from 'aws-sdk/lib/request'
 AWSXRay.captureAWS(require('aws-sdk'))
 
 const eventsDbd = process.env.EVENTS_DDB!
@@ -18,6 +19,16 @@ export const handler = async (
   event: SNSEvent,
   context: Context
 ): Promise<void> => {
+  //Criando um batch de promises
+  const promises: Promise<
+    PromiseResult<DynamoDB.DocumentClient.PutItemOutput, AWSError>
+  >[] = []
+  //processando paralelamente meus record
+  event.Records.forEach((record) => {
+    promises.push(createEvent(record.Sns))
+  })
+
+  await Promise.all(promises)
   return
 }
 
