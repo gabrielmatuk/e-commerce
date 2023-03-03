@@ -39,7 +39,7 @@ export class OrdersAppLayersStack extends cdk.Stack {
       {
         code: lambda.Code.fromAsset('lambda/orders/layers/ordersEventsLayer'),
         compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
-        layerVersionName: 'ordersEventsLayer',
+        layerVersionName: 'OrdersEventsLayer',
         removalPolicy: cdk.RemovalPolicy.RETAIN,
       }
     )
@@ -48,6 +48,25 @@ export class OrdersAppLayersStack extends cdk.Stack {
       parameterName: 'OrdersEventsLayerVersionArn',
 
       stringValue: ordersEventsLayer.layerVersionArn,
+    })
+
+    const ordersEventsRepositoryLayer = new lambda.LayerVersion(
+      this,
+      'ordersEventsRepositoryLayer',
+      {
+        code: lambda.Code.fromAsset(
+          'lambda/orders/layers/ordersEventsRepositoryLayer'
+        ),
+        compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
+        layerVersionName: 'OrdersRepositoryEventsLayer',
+        removalPolicy: cdk.RemovalPolicy.RETAIN,
+      }
+    )
+
+    new ssm.StringParameter(this, 'OrdersEventsRepositoryLayerVersionArn', {
+      parameterName: 'OrdersEventsRepositoryLayerVersionArn',
+
+      stringValue: ordersEventsRepositoryLayer.layerVersionArn,
     })
   }
 }

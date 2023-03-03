@@ -57,11 +57,12 @@ const ordersAppStack = new OrdersAppStack(app, 'OrdersApp', {
   tags: tags,
   env: env,
   productsDdb: productsAppStack.productsDdb,
+  eventsDbd: eventsDdbStack.table,
 })
 
 ordersAppStack.addDependency(productsAppStack)
 ordersAppStack.addDependency(ordersAppLayerStack)
-
+ordersAppStack.addDependency(eventsDdbStack)
 //Nesse momento, estou passando o parametro das Lambdas para o meu API Gateway
 const eCommerceApiStack = new ECommerceApiStack(app, 'ECommerceApi', {
   productsFetchHandler: productsAppStack.productsFetchHandler,

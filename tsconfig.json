@@ -38,6 +38,9 @@
       ],
       "/opt/nodejs/ordersEventsLayer":[
         "lambda/orders/layers/ordersEventsLayer/nodejs/orderEvent"
+      ],
+      "/opt/nodejs/ordersEventsRepositoryLayer":[
+        "lambda/orders/layers/ordersEventsRepositoryLayer/nodejs/orderEventRepository"
       ]
     }
   },
