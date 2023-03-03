@@ -10,6 +10,7 @@ import { Construct } from 'constructs'
 
 interface OrdersAppStackProps extends cdk.StackProps {
   productsDdb: dynamodb.Table
+  eventsDbd: dynamodb.Table
 }
 
 export class OrdersAppStack extends cdk.Stack {
@@ -113,5 +114,30 @@ export class OrdersAppStack extends cdk.Stack {
     ordersDdb.grantReadWriteData(this.ordersHandler)
     props.productsDdb.grantReadData(this.ordersHandler)
     ordersTopic.grantPublish(this.ordersHandler)
+
+    const orderEventsHandler = new lambdaNodeJS.NodejsFunction(
+      this,
+      'OrdersEventsFunction',
+      {
+        functionName: 'OrdersEventsFunction',
+        entry: 'lambda/orders/ordersEventsFunction.ts',
+        handler: 'handler',
+        memorySize: 128,
+        timeout: cdk.Duration.seconds(2),
+        bundling: {
+          //como vamos empacotar o arquivo e subir na AWS.
+          minify: true,
+          sourceMap: false,
+        },
+        environment: {
+          EVENTS_DDB: props.eventsDbd.tableName,
+        },
+        layers: [ordersEventsLayer],
+        tracing: lambda.Tracing.ACTIVE,
+        insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_119_0,
+      }
+    )
+
+    ordersTopic.addSubscription(new subs.LambdaSubscription(orderEventsHandler))
   }
 }
