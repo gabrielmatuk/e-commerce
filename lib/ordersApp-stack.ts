@@ -223,5 +223,9 @@ export class OrdersAppStack extends cdk.Stack {
         insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_119_0,
       }
     )
+    orderEmailsHandler.addEventSource(
+      new lambdaEventSource.SqsEventSource(orderEventQueue)
+    )
+    orderEventQueue.grantConsumeMessages(orderEmailsHandler)
   }
 }
