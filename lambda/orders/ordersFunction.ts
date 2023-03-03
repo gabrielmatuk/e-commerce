@@ -1,6 +1,11 @@
-import { DynamoDB } from 'aws-sdk'
-import { Order, OrderProduct, OrderRepository } from '/opt/nodejs/ordersLayer'
+import { DynamoDB, SNS } from 'aws-sdk'
+import { Order, OrderRepository } from '/opt/nodejs/ordersLayer'
 import { Product, ProductRepository } from '/opt/nodejs/productsLayer'
+import {
+  Envelope,
+  OrderEvent,
+  OrderEventType,
+} from '/opt/nodejs/ordersEventsLayer'
 import {
   CarrierType,
   OrderProductResponse,
@@ -15,13 +20,14 @@ import {
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda'
-
 AWSXRay.captureAWS(require('aws-sdk'))
 
 const ordersDdb = process.env.ORDERS_DDB!
 const productsDdb = process.env.PRODUCTS_DDB!
+const orderEventsTopicArn = process.env.ORDER_EVENTS_TOPIC_ARN!
 
 const ddbClient = new DynamoDB.DocumentClient()
+const snsClient = new SNS()
 
 const orderRepository = new OrderRepository(ddbClient, ordersDdb)
 const productRepository = new ProductRepository(ddbClient, productsDdb)
@@ -121,6 +127,37 @@ export const handler = async (
     statusCode: 400,
     body: 'Bad request',
   }
+}
+
+const sendOrderEvent = async (
+  order: Order,
+  eventType: OrderEventType,
+  lambdaRequestId: string
+) => {
+  const productCodes: string[] = []
+  order.products.forEach((product) => {
+    productCodes.push(product.code)
+  })
+
+  const orderEvent: OrderEvent = {
+    email: order.pk,
+    orderId: order.sk!,
+    billing: order.billing,
+    shipping: order.shipping,
+    requestId: lambdaRequestId,
+    productCodes: productCodes,
+  }
+  const envelope: Envelope = {
+    eventType: eventType,
+    data: JSON.stringify(orderEvent),
+  }
+
+  return snsClient
+    .publish({
+      TopicArn: orderEventsTopicArn,
+      Message: JSON.stringify(envelope),
+    })
+    .promise()
 }
 
 const convertToOrderResponse = (order: Order): OrderResponse => {
