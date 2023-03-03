@@ -88,7 +88,6 @@ export const handler = async (
   } else if (method === 'POST') {
     console.log('POST /orders')
     const orderRequest = JSON.parse(event.body!) as OrderRequest
-    console.log(orderRequest)
     const products = await productRepository.getProductsByIds(
       orderRequest.productIds
     )
@@ -184,6 +183,12 @@ const sendOrderEvent = async (
     .publish({
       TopicArn: orderEventsTopicArn,
       Message: JSON.stringify(envelope),
+      MessageAttributes: {
+        eventType: {
+          DataType: 'String',
+          StringValue: eventType,
+        },
+      },
     })
     .promise()
 }
