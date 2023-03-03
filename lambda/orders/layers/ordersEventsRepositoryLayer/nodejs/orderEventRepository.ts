@@ -24,9 +24,11 @@ export class OrderEventRepository {
   }
 
   createOrderEvent(orderEvent: OrderEventDdb) {
-    return this.ddbClient.put({
-      TableName: this.eventsDdb,
-      Item: orderEvent,
-    }).promise
+    return this.ddbClient
+      .put({
+        TableName: this.eventsDdb,
+        Item: orderEvent,
+      })
+      .promise()
   }
 }
