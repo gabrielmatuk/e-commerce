@@ -199,8 +199,17 @@ export class OrdersAppStack extends cdk.Stack {
       })
     )
 
+    const orderEventsDlq = new sqs.Queue(this, 'OrderEventsDlq', {
+      queueName: 'order-events-dlq',
+      retentionPeriod: cdk.Duration.days(10),
+    })
+
     const orderEventQueue = new sqs.Queue(this, 'OrderEventsQueue', {
       queueName: 'order-events',
+      deadLetterQueue: {
+        maxReceiveCount: 3,
+        queue: orderEventsDlq,
+      },
     })
 
     ordersTopic.addSubscription(
