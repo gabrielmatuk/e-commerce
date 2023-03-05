@@ -6,6 +6,7 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import * as s3 from 'aws-cdk-lib/aws-s3'
 import * as iam from 'aws-cdk-lib/aws-iam'
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications'
+import * as lambda from 'aws-cdk-lib/aws-lambda'
 
 import { Construct } from 'constructs'
 
@@ -39,9 +40,41 @@ export class InvoiceWSApiStack extends cdk.Stack {
       lifecycleRules: [{ enabled: true, expiration: cdk.Duration.days(1) }],
     })
     //WebSocket connection handler
-
+    const connectionHandler = new lambdaNodeJS.NodejsFunction(
+      this,
+      'InvoiceConnectionFunction',
+      {
+        functionName: 'InvoiceConnectionFunction',
+        entry: 'lambda/invoice/invoiceConnectionFunction.ts',
+        handler: 'handler',
+        memorySize: 128,
+        timeout: cdk.Duration.seconds(2),
+        bundling: {
+          //como vamos empacotar o arquivo e subir na AWS.
+          minify: true,
+          sourceMap: false,
+        },
+        tracing: lambda.Tracing.ACTIVE,
+      }
+    )
     //WebSocket disconnection handler
-
+    const disconnectionHandler = new lambdaNodeJS.NodejsFunction(
+      this,
+      'InvoiceDisconnectionFunction',
+      {
+        functionName: 'InvoiceDisconnectionFunction',
+        entry: 'lambda/invoice/invoiceDisconnectionFunction.ts',
+        handler: 'handler',
+        memorySize: 128,
+        timeout: cdk.Duration.seconds(2),
+        bundling: {
+          //como vamos empacotar o arquivo e subir na AWS.
+          minify: true,
+          sourceMap: false,
+        },
+        tracing: lambda.Tracing.ACTIVE,
+      }
+    )
     //WebSocket API
 
     //Invoice uRL handler
