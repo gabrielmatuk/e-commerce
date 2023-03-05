@@ -182,7 +182,39 @@ export class InvoiceWSApiStack extends cdk.Stack {
     invoiceImportHandler.addToRolePolicy(invoicesBucketGetDeleteObjectPolicy)
     webSocketApi.grantManageConnections(invoiceImportHandler)
     //Cancel import handler
-
+    const cancelImportHandler = new lambdaNodeJS.NodejsFunction(
+      this,
+      'CancelImportFunction',
+      {
+        functionName: 'CancelImportFunction',
+        entry: 'lambda/invoice/cancelImportFunction.ts',
+        handler: 'handler',
+        memorySize: 128,
+        timeout: cdk.Duration.seconds(2),
+        bundling: {
+          //como vamos empacotar o arquivo e subir na AWS.
+          minify: true,
+          sourceMap: false,
+        },
+        tracing: lambda.Tracing.ACTIVE,
+        environment: {
+          INVOICE_DDB: invoicesDdb.tableName,
+          INVOICE_WSAPI_ENDPOINT: wsApiEndpoint,
+        },
+      }
+    )
+    const invoicesDdbReadWriteTransactionPolicy = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['dynamodb:UpdateItem', 'dynamodb:GetItem'],
+      resources: [invoicesDdb.tableArn],
+      conditions: {
+        ['ForAllValues:StringLike']: {
+          'dynamodb:LeadingKeys': ['#transaction'],
+        },
+      },
+    })
+    cancelImportHandler.addToRolePolicy(invoicesDdbReadWriteTransactionPolicy)
+    webSocketApi.grantManageConnections(cancelImportHandler)
     //WebScoekt API routes
   }
 }
