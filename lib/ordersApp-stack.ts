@@ -18,6 +18,7 @@ interface OrdersAppStackProps extends cdk.StackProps {
 
 export class OrdersAppStack extends cdk.Stack {
   readonly ordersHandler: lambdaNodeJS.NodejsFunction
+  readonly orderEventsFetchHandler: lambdaNodeJS.NodejsFunction
 
   constructor(scope: Construct, id: string, props: OrdersAppStackProps) {
     super(scope, id, props)
@@ -256,5 +257,28 @@ export class OrdersAppStack extends cdk.Stack {
       resources: ['*'],
     })
     orderEmailsHandler.addToRolePolicy(orderEmailSesPolicy)
+
+    this.orderEventsFetchHandler = new lambdaNodeJS.NodejsFunction(
+      this,
+      'OrderEventsFetchFunction',
+      {
+        functionName: 'OrderEventsFetchFunction',
+        entry: 'lambda/orders/orderEventsFetchFunction.ts',
+        handler: 'handler',
+        memorySize: 128,
+        timeout: cdk.Duration.seconds(2),
+        bundling: {
+          //como vamos empacotar o arquivo e subir na AWS.
+          minify: true,
+          sourceMap: false,
+        },
+        environment: {
+          EVENTS_DDB: props.eventsDbd.tableName,
+        },
+        layers: [ordersEventsRepositoryLayer],
+        tracing: lambda.Tracing.ACTIVE,
+        insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_119_0,
+      }
+    )
   }
 }
