@@ -76,6 +76,29 @@ export class InvoiceWSApiStack extends cdk.Stack {
       }
     )
     //WebSocket API
+    const webSocketApi = new apigatewayv2.WebSocketApi(this, 'InvoiceWSApi', {
+      apiName: 'InvoiceWSApi',
+      connectRouteOptions: {
+        integration: new apigatewayv2_integrations.WebSocketLambdaIntegration(
+          'ConnectionHandler',
+          connectionHandler
+        ),
+      },
+      disconnectRouteOptions: {
+        integration: new apigatewayv2_integrations.WebSocketLambdaIntegration(
+          'DisconnectionHandler',
+          disconnectionHandler
+        ),
+      },
+    })
+
+    const stage = 'prod'
+    const wsApiEndpoint = `${webSocketApi.apiEndpoint}/${stage}`
+    new apigatewayv2.WebSocketStage(this, 'InvoiceWSApiStage', {
+      webSocketApi: webSocketApi,
+      stageName: stage,
+      autoDeploy: true,
+    })
 
     //Invoice uRL handler
 
