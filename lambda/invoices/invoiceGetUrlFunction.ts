@@ -9,6 +9,7 @@ import {
   InvoiceTransactionStatus,
   InvoiceTransactionRepository,
 } from '/opt/nodejs/invoiceTransaction'
+import { InvoiceWSService } from '/opt/nodejs/invoiceWSConnection'
 
 import * as AWSXray from 'aws-xray-sdk'
 
@@ -29,6 +30,8 @@ const invoiceTransactionRepository = new InvoiceTransactionRepository(
   invoicesDdb
 )
 
+const invoiceWSService = new InvoiceWSService(apigwManagementApi)
+
 export const handler = async (
   event: APIGatewayProxyEvent,
   context: Context
@@ -43,7 +46,7 @@ export const handler = async (
   const key = uuid()
   const expires = 300
 
-  const signedUrl = await s3Client.getSignedUrlPromise('putObject', {
+  const signedUrlPut = await s3Client.getSignedUrlPromise('putObject', {
     Bucket: bucketName,
     Key: key,
     Expires: expires,
@@ -64,6 +67,12 @@ export const handler = async (
     endpoint: invoicesWsApiEndpoint,
   })
   //Send URL back to WS connected client
+  const postData = JSON.stringify({
+    url: signedUrlPut,
+    expires: expires,
+    transactionId: key,
+  })
+  await invoiceWSService.sendData(connectionId, postData)
 
   return {
     statusCode: 200,
