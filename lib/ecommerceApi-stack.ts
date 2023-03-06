@@ -103,6 +103,15 @@ export class ECommerceApiStack extends cdk.Stack {
       scopeName: 'mobile',
       scopeDescription: 'Customer Mobile operation',
     })
+
+    const customerResourceServer = this.customerPool.addResourceServer(
+      'CustomerResourceServer',
+      {
+        identifier: 'customer',
+        userPoolResourceServerName: 'CustomerResourceServer',
+        scopes: [customerMobileScope, customerWebScope],
+      }
+    )
   }
 
   private createOrdersService(
