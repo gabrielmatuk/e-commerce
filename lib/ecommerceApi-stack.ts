@@ -52,8 +52,50 @@ export class ECommerceApiStack extends cdk.Stack {
   }
 
   private createCognitoAuth() {
+    const postConfirmationHandler = new lambdaNodeJS.NodejsFunction(
+      this,
+      'PostConfirmationFunction',
+      {
+        functionName: 'PostConfirmationFunction',
+        entry: 'lambda/auth/postConfirmationFunction.ts',
+        handler: 'handler',
+        memorySize: 128,
+        timeout: cdk.Duration.seconds(2),
+        bundling: {
+          //como vamos empacotar o arquivo e subir na AWS.
+          minify: true,
+          sourceMap: false,
+        },
+        tracing: lambda.Tracing.ACTIVE,
+        insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_119_0,
+      }
+    )
+
+    const preAuthenticationHandler = new lambdaNodeJS.NodejsFunction(
+      this,
+      'PreAuthenticationFunction',
+      {
+        functionName: 'PreAuthenticationFunction',
+        entry: 'lambda/auth/preAuthenticationFunction.ts',
+        handler: 'handler',
+        memorySize: 128,
+        timeout: cdk.Duration.seconds(2),
+        bundling: {
+          //como vamos empacotar o arquivo e subir na AWS.
+          minify: true,
+          sourceMap: false,
+        },
+        tracing: lambda.Tracing.ACTIVE,
+        insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_119_0,
+      }
+    )
+
     //Cognito customer UserPool
     this.customerPool = new cognito.UserPool(this, 'CustomerPool', {
+      lambdaTriggers: {
+        preAuthentication: preAuthenticationHandler,
+        postConfirmation: postConfirmationHandler,
+      },
       userPoolName: 'CustomerPool',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       selfSignUpEnabled: true,
