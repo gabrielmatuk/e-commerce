@@ -64,6 +64,7 @@ export class InvoiceWSApiStack extends cdk.Stack {
       },
       timeToLiveAttribute: 'ttl',
       removalPolicy: cdk.RemovalPolicy.DESTROY,
+      stream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
     })
 
     //Invoice bucket
