@@ -5,6 +5,11 @@ import {
 } from 'aws-lambda'
 import { ApiGatewayManagementApi, DynamoDB, S3 } from 'aws-sdk'
 import { v4 as uuid } from 'uuid'
+import {
+  InvoiceTransactionStatus,
+  InvoiceTransactionRepository,
+} from '/opt/nodejs/invoiceTransaction'
+
 import * as AWSXray from 'aws-xray-sdk'
 
 AWSXray.captureAWS(require('aws-sdk'))
@@ -18,6 +23,11 @@ const ddbClient = new DynamoDB.DocumentClient()
 const apigwManagementApi = new ApiGatewayManagementApi({
   endpoint: invoicesWsApiEndpoint,
 })
+
+const invoiceTransactionRepository = new InvoiceTransactionRepository(
+  ddbClient,
+  invoicesDdb
+)
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -38,6 +48,22 @@ export const handler = async (
     Key: key,
     Expires: expires,
   })
+
+  //Create invoice transaction
+  const timestamp = Date.now()
+  const ttl = ~~(timestamp / 1000 + 60 * 2)
+  await invoiceTransactionRepository.createInvoiceTransaction({
+    pk: '#transaction',
+    sk: key,
+    ttl: ttl,
+    requestId: lambdaRequestId,
+    transactionStatus: InvoiceTransactionStatus.GENERATED,
+    timestamp: timestamp,
+    expiresIn: expires,
+    connectionId: connectionId,
+    endpoint: invoicesWsApiEndpoint,
+  })
+  //Send URL back to WS connected client
 
   return {
     statusCode: 200,
