@@ -11,8 +11,12 @@ import * as ssm from 'aws-cdk-lib/aws-ssm'
 
 import { Construct } from 'constructs'
 
+interface InvoiceWSApiStackProps extends cdk.StackProps {
+  eventsDdb: dynamodb.Table
+}
+
 export class InvoiceWSApiStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: InvoiceWSApiStackProps) {
     super(scope, id, props)
     //Invoice Transaction Layer
     const invoiceTransactionLayerArn =
@@ -270,5 +274,28 @@ export class InvoiceWSApiStack extends cdk.Stack {
         cancelImportHandler
       ),
     })
+
+    const invoiceEventsHandler = new lambdaNodeJS.NodejsFunction(
+      this,
+      'InvoiceEventsFunction',
+      {
+        functionName: 'InvoiceEventsFunction',
+        entry: 'lambda/invoices/invoiceEventsFunction.ts',
+        handler: 'handler',
+        memorySize: 128,
+        timeout: cdk.Duration.seconds(2),
+        bundling: {
+          //como vamos empacotar o arquivo e subir na AWS.
+          minify: true,
+          sourceMap: false,
+        },
+        tracing: lambda.Tracing.ACTIVE,
+        environment: {
+          EVENTS_DDB: props.eventsDdb.tableName,
+          INVOICE_WSAPI_ENDPOINT: wsApiEndpoint,
+        },
+        layers: [invoiceWSConnectionLayer],
+      }
+    )
   }
 }
