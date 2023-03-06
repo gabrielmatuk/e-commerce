@@ -117,6 +117,7 @@ export const handler = async (
         body: JSON.stringify(convertToOrderResponse(order)),
       }
     } else {
+      console.error('Some product was not found')
       const result = await eventBridgeClient
         .putEvents({
           Entries: [
