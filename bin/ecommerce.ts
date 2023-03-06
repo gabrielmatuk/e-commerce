@@ -91,6 +91,7 @@ const invoicesAppLayersStack = new InvoicesAppLayersStack(
 )
 
 const invoiceWSApiStack = new InvoiceWSApiStack(app, 'InoivceApi', {
+  eventsDdb: eventsDdbStack.table,
   tags: {
     cost: 'InvoiceApp',
     team: 'MatukGabriel2',
@@ -99,3 +100,4 @@ const invoiceWSApiStack = new InvoiceWSApiStack(app, 'InoivceApi', {
 })
 
 invoiceWSApiStack.addDependency(invoicesAppLayersStack)
+invoiceWSApiStack.addDependency(eventsDdbStack)
