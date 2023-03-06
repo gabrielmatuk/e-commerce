@@ -78,7 +78,7 @@ export class InvoiceWSApiStack extends cdk.Stack {
       'InvoiceConnectionFunction',
       {
         functionName: 'InvoiceConnectionFunction',
-        entry: 'lambda/invoice/invoiceConnectionFunction.ts',
+        entry: 'lambda/invoices/invoiceConnectionFunction.ts',
         handler: 'handler',
         memorySize: 128,
         timeout: cdk.Duration.seconds(2),
@@ -96,7 +96,7 @@ export class InvoiceWSApiStack extends cdk.Stack {
       'InvoiceDisconnectionFunction',
       {
         functionName: 'InvoiceDisconnectionFunction',
-        entry: 'lambda/invoice/invoiceDisconnectionFunction.ts',
+        entry: 'lambda/invoices/invoiceDisconnectionFunction.ts',
         handler: 'handler',
         memorySize: 128,
         timeout: cdk.Duration.seconds(2),
@@ -139,7 +139,7 @@ export class InvoiceWSApiStack extends cdk.Stack {
       'InvoiceGetUrlFunction',
       {
         functionName: 'InvoiceGetUrlFunction',
-        entry: 'lambda/invoice/invoiceGetUrlFunction.ts',
+        entry: 'lambda/invoices/invoiceGetUrlFunction.ts',
         handler: 'handler',
         memorySize: 128,
         timeout: cdk.Duration.seconds(2),
@@ -184,7 +184,7 @@ export class InvoiceWSApiStack extends cdk.Stack {
       'InvoiceImportFunction',
       {
         functionName: 'InvoiceImportFunction',
-        entry: 'lambda/invoice/invoiceImportFunction.ts',
+        entry: 'lambda/invoices/invoiceImportFunction.ts',
         handler: 'handler',
         memorySize: 128,
         timeout: cdk.Duration.seconds(2),
@@ -226,7 +226,7 @@ export class InvoiceWSApiStack extends cdk.Stack {
       'CancelImportFunction',
       {
         functionName: 'CancelImportFunction',
-        entry: 'lambda/invoice/cancelImportFunction.ts',
+        entry: 'lambda/invoices/cancelImportFunction.ts',
         handler: 'handler',
         memorySize: 128,
         timeout: cdk.Duration.seconds(2),
