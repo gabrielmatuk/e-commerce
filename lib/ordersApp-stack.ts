@@ -44,7 +44,7 @@ export class OrdersAppStack extends cdk.Stack {
     })
     const writeThrottleEventsMetric = ordersDdb.metric('WriteThrottleEvents', {
       period: cdk.Duration.minutes(2),
-      statistic: 'SampeCount',
+      statistic: 'SampleCount',
       unit: cw.Unit.COUNT,
     })
     writeThrottleEventsMetric.createAlarm(this, 'WriteThrottleEventsAlarm', {
