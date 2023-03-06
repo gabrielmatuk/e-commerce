@@ -9,6 +9,7 @@ import { OrdersAppLayersStack } from '../lib/ordersAppLayers-stack'
 import { OrdersAppStack } from '../lib/ordersApp-stack'
 import { InvoiceWSApiStack } from '../lib/invoiceWSApi-stack'
 import { InvoicesAppLayersStack } from '../lib/invoicesAppLayers-stack'
+import { AuditEventBusStack } from '../lib/auditEventBus-stack'
 //Bin -> onde cria todas as stacks criadas na AWS vem dessa pasta
 //As Stacks podem ter depedencias entre elas. O API Gateway recebe parametros do lambda entao, vamos subir primeiro o lambda.
 
@@ -25,6 +26,13 @@ const tags = {
   team: 'MatukGabriel',
 }
 
+const auditEventBus = new AuditEventBusStack(app, 'AuditEvents', {
+  tags: {
+    cost: 'Audit',
+    team: 'MatukGabriel3',
+  },
+  env: env,
+})
 const productsAppLayersStack = new ProductsAppLayersStack(
   app,
   'ProductsAppLayers',
@@ -59,11 +67,13 @@ const ordersAppStack = new OrdersAppStack(app, 'OrdersApp', {
   env: env,
   productsDdb: productsAppStack.productsDdb,
   eventsDbd: eventsDdbStack.table,
+  auditBus: auditEventBus.bus,
 })
 
 ordersAppStack.addDependency(productsAppStack)
 ordersAppStack.addDependency(ordersAppLayerStack)
 ordersAppStack.addDependency(eventsDdbStack)
+ordersAppStack.addDependency(auditEventBus)
 //Nesse momento, estou passando o parametro das Lambdas para o meu API Gateway
 const eCommerceApiStack = new ECommerceApiStack(app, 'ECommerceApi', {
   productsFetchHandler: productsAppStack.productsFetchHandler,
@@ -92,6 +102,7 @@ const invoicesAppLayersStack = new InvoicesAppLayersStack(
 
 const invoiceWSApiStack = new InvoiceWSApiStack(app, 'InoivceApi', {
   eventsDdb: eventsDdbStack.table,
+  auditBus: auditEventBus.bus,
   tags: {
     cost: 'InvoiceApp',
     team: 'MatukGabriel2',
@@ -101,3 +112,4 @@ const invoiceWSApiStack = new InvoiceWSApiStack(app, 'InoivceApi', {
 
 invoiceWSApiStack.addDependency(invoicesAppLayersStack)
 invoiceWSApiStack.addDependency(eventsDdbStack)
+invoiceWSApiStack.addDependency(auditEventBus)
