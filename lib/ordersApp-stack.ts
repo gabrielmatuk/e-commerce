@@ -42,7 +42,6 @@ export class OrdersAppStack extends cdk.Stack {
       readCapacity: 1,
       writeCapacity: 1,
     })
-
     //Orders Layer
     const ordersLayerArn = ssm.StringParameter.valueForStringParameter(
       this,
