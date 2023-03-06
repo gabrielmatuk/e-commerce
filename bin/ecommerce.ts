@@ -7,7 +7,7 @@ import { ProductsAppLayersStack } from '../lib/productsAppLayers-stack'
 import { EventsDbdStack } from '../lib/eventsDbd-stack'
 import { OrdersAppLayersStack } from '../lib/ordersAppLayers-stack'
 import { OrdersAppStack } from '../lib/ordersApp-stack'
-
+import { InvoiceWSApiStack } from '../lib/invoiceWSApi-stack'
 //Bin -> onde cria todas as stacks criadas na AWS vem dessa pasta
 //As Stacks podem ter depedencias entre elas. O API Gateway recebe parametros do lambda entao, vamos subir primeiro o lambda.
 
@@ -76,3 +76,11 @@ const eCommerceApiStack = new ECommerceApiStack(app, 'ECommerceApi', {
 //Isso insere de forma mais explicita a depedencia de stacks
 eCommerceApiStack.addDependency(productsAppStack)
 eCommerceApiStack.addDependency(ordersAppStack)
+
+const invoiceWSApiStack = new InvoiceWSApiStack(app, 'InoivceApi', {
+  tags: {
+    cost: 'InvoiceApp',
+    team: 'MatukGabriel2',
+  },
+  env: env,
+})
