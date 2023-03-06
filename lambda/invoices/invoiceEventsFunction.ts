@@ -31,6 +31,10 @@ export const handler = async (
       }
     } else if (record.eventName === 'MODIFY') {
     } else if (record.eventName === 'REMOVE') {
+      if (record.dynamodb!.OldImage!.pk.S === '#transaction') {
+        console.log('Invoice transaction event received')
+        promises.push(processExpiredTransaction(record.dynamodb!.OldImage!))
+      }
     }
   })
 
@@ -57,11 +61,36 @@ const createEvent = async (
         eventType: eventType,
         info: {
           transaction: invoiceImage.transactionId.S,
-          productId: invoiceImage.productId.N,
+          productId: invoiceImage.productId.S,
+          quantity: invoiceImage.quantity.N,
         },
       },
     })
     .promise()
 
   return
+}
+
+const processExpiredTransaction = async (invoiceTransactionImage: {
+  [key: string]: AttributeValue
+}): Promise<void> => {
+  const transactionId = invoiceTransactionImage.sk.S!
+  const connectionId = invoiceTransactionImage.connectionId.S!
+
+  console.log(`TransactionId: ${transactionId} - ConnectionId: ${connectionId}`)
+
+  if (invoiceTransactionImage.transactionStatus.S === 'INVOICE_PROCESSED') {
+    console.log(`Invoice processed`)
+  } else {
+    console.log(
+      `Invoice import failed - Status: ${invoiceTransactionImage.transactionStatus.S}`
+    )
+    await invoiceWSService.sendInvoiceStatus(
+      transactionId,
+      connectionId,
+      'TIMEOUT'
+    )
+
+    await invoiceWSService.disconnectClient(connectionId)
+  }
 }
