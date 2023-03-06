@@ -267,15 +267,34 @@ export class ECommerceApiStack extends cdk.Stack {
       props.productsFetchHandler
     )
 
+    const productsFetchWebMobileIntegrationOption = {
+      authorizer: this.productsAuthorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizationScopes: ['customer/web', 'customer/mobile'],
+    }
+
+    const productsFetchWebIntegrationOption = {
+      authorizer: this.productsAuthorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizationScopes: ['customer/web'],
+    }
     //criar o recurso de produttos -> o / tem sua representacao pelo root  /products
     const productsResource = api.root.addResource('products')
-    //criando o metodo GET
-    productsResource.addMethod('GET', productsFetchIntegration)
+    //criando o metodo GET /products
+    productsResource.addMethod(
+      'GET',
+      productsFetchIntegration,
+      productsFetchWebMobileIntegrationOption
+    )
 
     // /products/{id} GET criando rota
     const productIdResource = productsResource.addResource('{id}')
     //Conectando a nota rota para o lambda
-    productIdResource.addMethod('GET', productsFetchIntegration)
+    productIdResource.addMethod(
+      'GET',
+      productsFetchIntegration,
+      productsFetchWebIntegrationOption
+    )
 
     //Novo recurso entrando no lambda que pode EDITAR a tabela
     const productsAdminIntegration = new apigateway.LambdaIntegration(
