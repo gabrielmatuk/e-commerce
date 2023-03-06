@@ -145,6 +145,15 @@ export class ECommerceApiStack extends cdk.Stack {
         ],
       },
     })
+
+    this.productsAuthorizer = new apigateway.CognitoUserPoolsAuthorizer(
+      this,
+      'ProductsAuthorizer',
+      {
+        authorizerName: 'ProductsAuthorizer',
+        cognitoUserPools: [this.customerPool],
+      }
+    )
   }
 
   private createOrdersService(
