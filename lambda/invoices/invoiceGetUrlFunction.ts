@@ -11,7 +11,7 @@ AWSXray.captureAWS(require('aws-sdk'))
 
 const invoicesDdb = process.env.INVOICE_DDB!
 const bucketName = process.env.BUCKET_NAME!
-const invoicesWsApiEndpoint = process.env.INVOICE_WSAPI_ENDPOINT!
+const invoicesWsApiEndpoint = process.env.INVOICE_WSAPI_ENDPOINT!.substring(6)
 
 const s3Client = new S3()
 const ddbClient = new DynamoDB.DocumentClient()
