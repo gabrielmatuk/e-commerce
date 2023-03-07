@@ -387,13 +387,13 @@ export class ECommerceApiStack extends cdk.Stack {
     const productsFetchWebMobileIntegrationOption = {
       authorizer: this.productsAuthorizer,
       authorizationType: apigateway.AuthorizationType.COGNITO,
-      authorizationScopes: ['customer/web', 'customer/mobile'],
+      authorizationScopes: ['customer/web', 'customer/mobile', 'admin/web'],
     }
 
     const productsFetchWebIntegrationOption = {
       authorizer: this.productsAuthorizer,
       authorizationType: apigateway.AuthorizationType.COGNITO,
-      authorizationScopes: ['customer/web'],
+      authorizationScopes: ['customer/web', 'admin/web'],
     }
     //criar o recurso de produttos -> o / tem sua representacao pelo root  /products
     const productsResource = api.root.addResource('products')
