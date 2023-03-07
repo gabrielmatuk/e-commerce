@@ -118,6 +118,16 @@ export const handler = async (
   } else if (method === 'POST') {
     console.log('POST /orders')
     const orderRequest = JSON.parse(event.body!) as OrderRequest
+
+    if (!isAdmin) {
+      orderRequest.email = authenticatedUser
+    } else if (orderRequest.email === null) {
+      return {
+        statusCode: 400,
+        body: 'Missing the order owner email',
+      }
+    }
+
     const products = await productRepository.getProductsByIds(
       orderRequest.productIds
     )
