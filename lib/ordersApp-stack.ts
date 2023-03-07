@@ -113,6 +113,17 @@ export class OrdersAppStack extends cdk.Stack {
       productsLayerArn
     )
 
+    //auth layer
+    const authUserInfoLayerArn = ssm.StringParameter.valueForStringParameter(
+      this,
+      'AuthUserInfoLayerVersionArn'
+    )
+
+    const authUserInfoLayer = lambda.LayerVersion.fromLayerVersionArn(
+      this,
+      'AuthUserInfoLayerVersionArn',
+      authUserInfoLayerArn
+    )
     //Criando SNS
     const ordersTopic = new sns.Topic(this, 'OrderEventsTopic', {
       displayName: 'Order events topic',
@@ -139,9 +150,14 @@ export class OrdersAppStack extends cdk.Stack {
           ORDER_EVENTS_TOPIC_ARN: ordersTopic.topicArn,
           AUDIT_BUS_NAME: props.auditBus.eventBusName,
         },
-        layers: [ordersLayer, productsLayer, ordersApiLayer, ordersEventsLayer],
+        layers: [
+          ordersLayer,
+          productsLayer,
+          ordersApiLayer,
+          ordersEventsLayer,
+          authUserInfoLayer,
+        ],
         tracing: lambda.Tracing.ACTIVE,
-        insightsVersion: lambda.LambdaInsightsVersion.VERSION_1_0_119_0,
       }
     )
 

@@ -3,7 +3,12 @@ import {
   APIGatewayProxyResult,
   Context,
 } from 'aws-lambda'
-import { DynamoDB, EventBridge, SNS } from 'aws-sdk'
+import {
+  CognitoIdentityServiceProvider,
+  DynamoDB,
+  EventBridge,
+  SNS,
+} from 'aws-sdk'
 import { Order, OrderRepository } from '/opt/nodejs/ordersLayer'
 import { Product, ProductRepository } from '/opt/nodejs/productsLayer'
 import {
@@ -19,6 +24,8 @@ import {
   PaymentType,
   ShippingType,
 } from '/opt/nodejs/ordersApiLayer'
+import { AuthInfoService } from '/opt/nodejs/authUserInfo'
+
 import { v4 as uuid } from 'uuid'
 
 import * as AWSXRay from 'aws-xray-sdk'
@@ -32,10 +39,12 @@ const auditBusName = process.env.AUDIT_BUS_NAME!
 const ddbClient = new DynamoDB.DocumentClient()
 const snsClient = new SNS()
 const eventBridgeClient = new EventBridge()
+const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
 
 const orderRepository = new OrderRepository(ddbClient, ordersDdb)
 const productRepository = new ProductRepository(ddbClient, productsDdb)
 
+const authInfoService = new AuthInfoService(cognitoIdentityServiceProvider)
 export const handler = async (
   event: APIGatewayProxyEvent,
   context: Context
@@ -79,10 +88,17 @@ export const handler = async (
       }
     } else {
       //Get all orders
-      const orders = await orderRepository.getAllOrders()
-      return {
-        statusCode: 200,
-        body: JSON.stringify(orders.map(convertToOrderResponse)),
+      if (authInfoService.isAdminUser(event.requestContext.authorizer)) {
+        const orders = await orderRepository.getAllOrders()
+        return {
+          statusCode: 200,
+          body: JSON.stringify(orders.map(convertToOrderResponse)),
+        }
+      } else {
+        return {
+          statusCode: 403,
+          body: `You don't have permission to access this content`,
+        }
       }
     }
 
