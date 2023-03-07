@@ -44,11 +44,10 @@ export class ECommerceApiStack extends cdk.Stack {
         }),
       },
     })
+    this.createCognitoAuth()
     //Conectando a integracao do API Gateway com o nosso Lambda!
     this.createProductsService(props, api)
     this.createOrdersService(props, api)
-
-    this.createCognitoAuth()
   }
 
   private createCognitoAuth() {
