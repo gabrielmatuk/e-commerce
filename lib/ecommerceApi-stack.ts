@@ -418,11 +418,68 @@ export class ECommerceApiStack extends cdk.Stack {
       props.productsAdminHandler
     )
 
+    const productRequestValidator = new apigateway.RequestValidator(
+      this,
+      'ProductRequestValidator',
+      {
+        restApi: api,
+        requestValidatorName: 'Product request validator',
+        validateRequestBody: true,
+      }
+    )
+
+    const productModel = new apigateway.Model(this, 'ProductModel', {
+      modelName: 'ProductModel',
+      restApi: api,
+      contentType: 'application/json',
+      schema: {
+        type: apigateway.JsonSchemaType.OBJECT,
+        properties: {
+          productName: {
+            type: apigateway.JsonSchemaType.STRING,
+          },
+          code: {
+            type: apigateway.JsonSchemaType.STRING,
+          },
+          model: {
+            type: apigateway.JsonSchemaType.STRING,
+          },
+          productUrl: {
+            type: apigateway.JsonSchemaType.STRING,
+          },
+          price: {
+            type: apigateway.JsonSchemaType.NUMBER,
+          },
+        },
+        required: ['productName', 'code'],
+      },
+    })
+
     // /products POST
-    productsResource.addMethod('POST', productsAdminIntegration)
+    productsResource.addMethod('POST', productsAdminIntegration, {
+      requestValidator: productRequestValidator,
+      requestModels: {
+        'application/json': productModel,
+      },
+      authorizer: this.productsAdminAuthorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizationScopes: ['admin/web'],
+    })
     // /products/{id} PUT
-    productIdResource.addMethod('PUT', productsAdminIntegration)
+    productIdResource.addMethod('PUT', productsAdminIntegration, {
+      requestValidator: productRequestValidator,
+      requestModels: {
+        'application/json': productModel,
+      },
+      authorizer: this.productsAdminAuthorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizationScopes: ['admin/web'],
+    })
     // /products/{id} DELETE
-    productIdResource.addMethod('DELETE', productsAdminIntegration)
+    productIdResource.addMethod('DELETE', productsAdminIntegration, {
+      authorizer: this.productsAdminAuthorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+      authorizationScopes: ['admin/web'],
+    })
   }
 }
