@@ -196,7 +196,7 @@ export class ECommerceApiStack extends cdk.Stack {
       }
     )
 
-    const adminesourceServer = this.customerPool.addResourceServer(
+    const adminResourceServer = this.adminPool.addResourceServer(
       'AdminResourceServer',
       {
         identifier: 'admin',
