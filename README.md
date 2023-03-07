@@ -1,14 +1,28 @@
-# Welcome to your CDK TypeScript project
+# Ecommerce API
 
-This is a blank project for CDK development with TypeScript.
+The ECommerce API is a descentralized API to create a full Ecommerce Backend structure using CDK.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+### API Structure
+
+| HTTP METHOD           | POST     | GET         | PUT         | DELETE      |
+| --------------------- | -------- | ----------- | ----------- | ----------- |
+| CRUD Products         | CREATE   | READ        | UPDATE      | DELETE      |
+| CRUD Orders           | CREATE   | READ        | UPDATE      | DELETE      |
+| /products             | Ok (201) | Error (404) | Error (404) | Error (404) |
+| /products/:id         | Ok (201) | Error (404) | Error (404) | Error (404) |
+| /orders               | Ok (201) | Error (404) | Error (404) | Error (404) |
+| /orders?email         | Ok (201) | Error (404) | Error (404) | Error (404) |
+| /orders?email&orderId | Ok (201) | Error (404) | Error (404) | Error (404) |
+
+## Infrastructure Architeture
+
+![infrastructure](tools/ecommerce-diagram.svg?raw=true)
 
 ## Useful commands
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+- `npm run build` compile typescript to js
+- `npm run watch` watch for changes and compile
+- `npm run test` perform the jest unit tests
+- `npm run deploy` deploy this stack to your default AWS account/region
+- `npm run diff` compare deployed stack with current state
+- `npm run clean` destroy all stacks on AWS account/region
