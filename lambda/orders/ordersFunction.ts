@@ -56,17 +56,15 @@ export const handler = async (
   console.log(
     `API Gateway Request Id: ${apiRequestId} - LambdaRequestId: ${lambdaRequestId}`
   )
+  const isAdmin = authInfoService.isAdminUser(event.requestContext.authorizer)
+  const authenticatedUser = await authInfoService.getUserInfo(
+    event.requestContext.authorizer
+  )
 
   if (method === 'GET') {
     if (event.queryStringParameters) {
       const email = event.queryStringParameters!.email
       const orderId = event.queryStringParameters!.orderId
-      const isAdmin = authInfoService.isAdminUser(
-        event.requestContext.authorizer
-      )
-      const authenticatedUser = await authInfoService.getUserInfo(
-        event.requestContext.authorizer
-      )
 
       if (isAdmin || email === authenticatedUser) {
         if (email) {
@@ -102,7 +100,7 @@ export const handler = async (
       }
     } else {
       //Get all orders
-      if (authInfoService.isAdminUser(event.requestContext.authorizer)) {
+      if (isAdmin) {
         const orders = await orderRepository.getAllOrders()
         return {
           statusCode: 200,
@@ -175,28 +173,35 @@ export const handler = async (
     const email = event.queryStringParameters!.email!
     const orderId = event.queryStringParameters!.orderId!
 
-    try {
-      const orderDelete = await orderRepository.deleteOrder(email, orderId)
+    if (isAdmin || email === authenticatedUser) {
+      try {
+        const orderDelete = await orderRepository.deleteOrder(email, orderId)
 
-      const eventResult = await sendOrderEvent(
-        orderDelete,
-        OrderEventType.DELETED,
-        lambdaRequestId
-      )
+        const eventResult = await sendOrderEvent(
+          orderDelete,
+          OrderEventType.DELETED,
+          lambdaRequestId
+        )
 
-      console.log(
-        `Order Deleted event sent - OrderId: ${orderDelete.sk} - MessageId: ${eventResult.MessageId}`
-      )
+        console.log(
+          `Order Deleted event sent - OrderId: ${orderDelete.sk} - MessageId: ${eventResult.MessageId}`
+        )
 
-      return {
-        statusCode: 200,
-        body: JSON.stringify(convertToOrderResponse(orderDelete)),
+        return {
+          statusCode: 200,
+          body: JSON.stringify(convertToOrderResponse(orderDelete)),
+        }
+      } catch (error) {
+        console.log((<Error>error).message)
+        return {
+          statusCode: 404,
+          body: (<Error>error).message,
+        }
       }
-    } catch (error) {
-      console.log((<Error>error).message)
+    } else {
       return {
-        statusCode: 404,
-        body: (<Error>error).message,
+        statusCode: 403,
+        body: `You don't have permission to access this content`,
       }
     }
   }
