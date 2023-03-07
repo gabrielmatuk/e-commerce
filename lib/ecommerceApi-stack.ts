@@ -129,6 +129,43 @@ export class ECommerceApiStack extends cdk.Stack {
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
     })
 
+    //Cognito admin UserPool
+    this.adminPool = new cognito.UserPool(this, 'AdminPool', {
+      userPoolName: 'AdminPool',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      selfSignUpEnabled: false,
+      userInvitation: {
+        emailSubject: 'Welcome to ECommerce administrator service',
+        emailBody:
+          'Your username is {username} and temporary password is {####}',
+      },
+      signInAliases: {
+        username: false,
+        email: true,
+      },
+      standardAttributes: {
+        email: {
+          required: true,
+          mutable: false,
+        },
+      },
+      passwordPolicy: {
+        minLength: 8,
+        requireLowercase: true,
+        requireUppercase: true,
+        requireDigits: true,
+        requireSymbols: true,
+        tempPasswordValidity: cdk.Duration.days(3),
+      },
+      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+    })
+
+    this.adminPool.addDomain('AdminDomain', {
+      cognitoDomain: {
+        domainPrefix: 'gpm-admin-service',
+      },
+    })
+
     this.customerPool.addDomain('CustomerDomain', {
       cognitoDomain: {
         domainPrefix: 'gpm-customer-service',
