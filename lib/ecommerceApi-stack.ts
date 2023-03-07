@@ -60,6 +60,18 @@ export class ECommerceApiStack extends cdk.Stack {
     })
 
     adminUserPolicy.attachToRole(<iam.Role>props.productsAdminHandler.role)
+    adminUserPolicy.attachToRole(<iam.Role>props.ordersHandler.role)
+
+    const customerUserPolicyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['cognito-idp:AdminGetUser'],
+      resources: [this.adminPool.userPoolArn],
+    })
+
+    const costumerUserPolicy = new iam.Policy(this, 'CustomerGetUserPolicy', {
+      statements: [customerUserPolicyStatement],
+    })
+    costumerUserPolicy.attachToRole(<iam.Role>props.ordersHandler.role)
 
     //Conectando a integracao do API Gateway com o nosso Lambda!
     this.createProductsService(props, api)
