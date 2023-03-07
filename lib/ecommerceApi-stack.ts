@@ -182,6 +182,11 @@ export class ECommerceApiStack extends cdk.Stack {
       scopeDescription: 'Customer Mobile operation',
     })
 
+    const adminWebScope = new cognito.ResourceServerScope({
+      scopeName: 'web',
+      scopeDescription: 'Admin Web operation',
+    })
+
     const customerResourceServer = this.customerPool.addResourceServer(
       'CustomerResourceServer',
       {
@@ -190,6 +195,16 @@ export class ECommerceApiStack extends cdk.Stack {
         scopes: [customerMobileScope, customerWebScope],
       }
     )
+
+    const adminesourceServer = this.customerPool.addResourceServer(
+      'AdminResourceServer',
+      {
+        identifier: 'admin',
+        userPoolResourceServerName: 'AdminResourceServer',
+        scopes: [adminWebScope],
+      }
+    )
+
     this.customerPool.addClient('customer-web-client', {
       userPoolClientName: 'customerWebClient',
       authFlows: {
